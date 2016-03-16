@@ -37,11 +37,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       
     page('/', function () {
         app.route = 'restaurants';
+        window.scrollTo(0, 0);
     }); 
       
     page('/restaurants/:placeid', function(data) {
       app.route = 'restaurant-info';
       app.params = data.params;
+      window.scrollTo(0, 0);      
     });  
 
     // 404
