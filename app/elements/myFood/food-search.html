@@ -49,7 +49,7 @@
         
         <label for="maxprice">
             <div class="sliderTitle">MAX PRICE LEVEL (1~4)</div>
-            <paper-slider class="teal" name="maxprice" id="maxprice" aria-label="max price" editable="true" pin snaps min="1" max="4" max-markers="4" step="1" value="1"></paper-slider>  
+            <paper-slider class="teal" name="maxPriceLevel" id="maxPriceLevel" aria-label="max Price Level" editable="true" pin snaps min="1" max="4" max-markers="4" step="1" value="1"></paper-slider>  
         </label>
         
         <label for="opennow">
@@ -126,10 +126,12 @@
             var request = {
                 location: this.locationObj,
                 radius: event.target.request.params['radius']*1000,
-                types: ['food'],
-                maxprice :  event.target.request.params['maxprice'],
+                type: 'food',
+                minPriceLevel: 0,
+                maxPriceLevel :  event.target.request.params['maxPriceLevel'],
                 keyword  :  event.target.request.params['keyword'],
                 openNow : event.target.request.params['opennow'],
+                //rankBy: google.maps.places.RankBy.DISTANCE,
             };
 
             function callback(results, status) {
