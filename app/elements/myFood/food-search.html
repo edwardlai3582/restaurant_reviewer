@@ -36,7 +36,8 @@
       }
   </style>   
   <template>
-    <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="foodform">
+   <!--https://maps.googleapis.com/maps/api/place/nearbysearch/json?-->
+    <form is="iron-form" method="get" action="/" id="foodform">
         <paper-input  label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
           
