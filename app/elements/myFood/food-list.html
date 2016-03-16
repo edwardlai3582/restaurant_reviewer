@@ -1,0 +1,108 @@
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+
+<dom-module id="food-list">
+  <style>
+    a{
+        text-decoration: none;
+        color: teal;
+    }
+    paper-card{
+        width: 440px;
+        margin:15px;
+    }  
+    paper-card.white {
+        --paper-card-header-color: black;
+    }
+    .open{
+        color: teal;      
+    }
+    .close{
+        color: red;      
+    }  
+    .vicinity { 
+        color: var(--paper-grey-600); 
+    }
+    .reviewlink { 
+        color: var(--google-blue-500); 
+    }  
+    @media all and (max-width: 500px) {
+      paper-card {
+        min-width: 90%;
+        
+      }
+    }  
+  </style>
+     
+  <template>    
+        <template is="dom-repeat" items="{{ajaxResult}}">
+            <paper-card heading="[[item.name]]" class="white">
+                <div class="card-content">
+                    <template is="dom-if" if="[[item.photos.0.photo_reference]]">
+                        <iron-image height="260" src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[item.photos.0.photo_reference]]&key=[[apiKey]]" alt="[[item.name]]" fade preload></iron-image>
+                    </template>
+                    <div class="food-rating">
+                        <template is="dom-if" if="[[item.rating]]">    
+                            RATING: [[item.rating]]/5
+                        </template>
+                    </div>
+                    <div class="food-price">
+                        <template is="dom-if" if="[[item.rating]]">    
+                            PRICE LEVEL: [[item.price_level]]
+                        </template>
+                    </div>
+                    
+                    <template is="dom-if" if="[[item.opening_hours.open_now]]">    
+                        <div class="open">OPEN NOW</div>
+                    </template>
+                    <template is="dom-if" if="[[!item.opening_hours.open_now]]">    
+                        <div class="close">CLOSED</div>
+                    </template>
+                        
+                    <p class="vicinity">[[item.vicinity]]</p>
+                </div>
+                <div class="card-actions">
+                    <paper-button class="reviewlink" style="float:right;"><a href$="{{baseUrl}}restaurants/[[item.place_id]]">Reviews</a></paper-button>
+                </div>
+            </paper-card>
+        </template>
+    </template>
+
+  <script>  
+      Polymer({
+        is: 'food-list',
+
+        properties: {
+            apiKey:{
+                type: String,
+                value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
+                notify: false  
+            },
+            baseUrl:{
+                type: String,
+                value: '',
+                notify: true  
+            },
+            ajaxResult:{
+                type: Array,
+                notify: true,
+            },
+        },
+          
+      });
+  </script>
+</dom-module>

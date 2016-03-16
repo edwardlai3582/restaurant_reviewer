@@ -1,0 +1,98 @@
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="./food-search.html">
+<link rel="import" href="./food-list.html">
+
+<dom-module id="search-list">
+  <style>
+      .searchiconWrapper{
+          background-color: #a36b00;
+          position: fixed;
+          top: 5px;
+          right:0;
+          z-index: 3;
+      }
+      
+      paper-icon-button{
+          color:white;    
+      }
+      
+      #formWrapper{
+          position: fixed;
+          width: 100%;
+          top:50px;
+          left: 0;
+          z-index: 2;
+          background-color: #EFC22C;
+          border-top-color: aliceblue;
+          border-top-width: 1px;
+          border-top-style: solid;
+      }
+      
+      #form{
+          position: relative;
+          width: 90%;
+          left: 5%;
+          margin-bottom: 20px;
+      }
+      
+      #listWrapper{
+          z-index: 1;
+          position: relative;
+          top:20px;
+      }
+  </style>   
+  <template>
+    <template is="dom-if" if="{{!showForm}}">    
+        <div class="searchiconWrapper" on-click="show">
+            <paper-icon-button aria-label="open search restaurant form" icon="search"></paper-icon-button>
+        </div>
+    </template>
+    <template is="dom-if" if="{{showForm}}">    
+        <div class="searchiconWrapper" on-click="show">
+            <paper-icon-button aria-label="close search restaurant form" icon="close"></paper-icon-button>
+        </div>
+    </template> 
+      
+    <template is="dom-if" if="{{showForm}}">    
+        <div id="formWrapper">
+            <div id="form">
+                <food-search show-form="{{showForm}}" ajax-result="{{ajaxResult}}"></food-search>
+            </div>
+        </div>
+    </template>
+    
+    <div id="listWrapper">
+        <food-list base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
+    </div>     
+  </template>
+
+  <script>  
+      Polymer({
+        is: 'search-list',
+
+        properties: {
+            baseUrl:{
+                type: String,
+                value: '',
+                notify: true  
+            },
+            ajaxResult:{
+                type: Array,
+                value: function() { return []; },
+                notify: true,
+            },
+            showForm:{
+                type: Boolean,
+                value: false,
+                notify: true
+            }
+        },
+        
+        show: function(e){
+            this.showForm=!this.showForm;
+        },  
+      });
+  </script>
+</dom-module>

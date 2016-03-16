@@ -1,0 +1,148 @@
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+
+
+<dom-module id="food-search">
+  <style>
+      paper-input{
+          --paper-input-container-color: black;
+      }
+      .sliderTitle{
+          padding-top: 10px;
+          font-size:12px;
+          color: black;
+      }
+      paper-slider.teal {
+        --paper-slider-knob-color: var(--paper-teal-500);
+        --paper-slider-active-color: var(--paper-teal-500);
+        --paper-slider-pin-color: var(--paper-teal-500);
+        --paper-slider-knob-start-border-color: var(--paper-teal-500);  
+      }
+      paper-checkbox{
+        --paper-checkbox-checked-color: var(--paper-teal-500);  
+      }
+  </style>   
+  <template>
+    <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="foodform">
+        <paper-input  label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
+        <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
+          
+        <paper-input label="KEYWORD" aria-label="keyword" name="keyword" placeholder="burrito, Thai..." required></paper-input>
+        
+        <label for="radius">
+            <div class="sliderTitle">RADIUS (km)</div>
+            <paper-slider class="teal" name="radius" id="radius" aria-label="radius" editable="true" pin snaps min="1" max="10" max-markers="10" step="1" value="1"></paper-slider>    
+        </label>
+        
+        <label for="maxprice">
+            <div class="sliderTitle">MAX PRICE LEVEL (1~4)</div>
+            <paper-slider class="teal" name="maxprice" id="maxprice" aria-label="max price" editable="true" pin snaps min="1" max="4" max-markers="4" step="1" value="1"></paper-slider>  
+        </label>
+        
+        <label for="opennow">
+            <paper-checkbox name="opennow" aria-label="open now" value="true">OPEN NOW ONLY</paper-checkbox>     
+        </label>
+        <br><br>
+        <paper-button raised aria-label="submit form" onclick="_submit(event)">Submit</paper-button>    
+    </form>                            
+
+  </template>
+
+  <script>
+    
+        function _submit(event) {
+            Polymer.dom(event).localTarget.parentElement.submit();
+            console.log("Submitted!");
+        }
+        
+      Polymer({
+        is: 'food-search',
+
+        properties: {
+          showForm:{
+                type: Boolean,
+                notify: true
+          },    
+          apiKey:{
+            type: String,
+            value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
+            notify: false  
+          },
+          baseUrl:{
+            type: String,
+            value: '',
+            notify: true  
+          },
+          locationinLatLng:{
+            type: String,
+            value:'168,168',
+            notify: true
+          },
+        ajaxResult:{
+            type: Array,
+            //value: '',//function() { return []; },
+            notify: true,
+        },      
+            addressvalue: {
+            type: String,
+            notify: true
+          },
+          place: {
+            type: Object,
+            value: function () { return {}; },
+            notify: true
+          }    
+        },
+          
+        listeners: {
+            'foodform.iron-form-response': 'formResponse',
+            'foodform.iron-form-presubmit': 'formPreSubmit'
+        },
+        formPreSubmit: function(event) {
+            event.target.request.params['radius'] = event.target.request.params['radius']*1000;
+            event.target.request.params['type'] = 'food';
+            event.target.request.params['location'] = this.locationinLatLng;
+            event.target.request.params['key'] = this.apiKey;
+        },
+        formResponse: function(event) {
+            console.log(event);
+            //this.ajaxResponse=event.detail.response;
+            this.set("showForm", false);
+            this.set("ajaxResult", event.detail.response.results)
+            //this.ajaxResult=JSON.stringify(event.detail.response.results);
+            console.log(this.ajaxResult);
+        }, 
+          
+        on_api_load: function () {
+          this.autocomplete = new google.maps.places.Autocomplete(this.$.addressinput, {});
+          google.maps.event.addListener(this.autocomplete, 'place_changed', this.on_change_place.bind(this));
+        },
+        on_change_place: function () {
+          this.place = this.autocomplete.getPlace();
+          if (!this.place.address_components) {
+            return;
+          }
+          this.addressvalue = this.place.formatted_address;
+          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();
+
+        },
+ 
+          
+      });
+             
+   
+  </script>
+</dom-module>

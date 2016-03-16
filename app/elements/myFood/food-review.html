@@ -1,0 +1,250 @@
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="./epoch-time.html">
+
+<dom-module id="food-review">
+  <style>
+      .backWrapper{
+          background-color: #a36b00;
+          position: fixed;
+          top: 5px;
+          left:0;
+          z-index: 3;
+      }
+      paper-icon-button{
+          color:white;    
+      }
+      .bannerWrapper{
+          position: relative;
+          margin-top: 50px;
+      }
+      .banner{
+          background-color: teal;
+          width: 100%;
+          display:inline-flex;
+          
+      }
+      .imageWrapper{
+          border-radius: 50%;
+          width: 200px;
+          height: 200px;
+          overflow: hidden;
+          margin: 10px;
+      }
+      .textWrapper{
+          margin-left: 30px;
+          color: white;
+      }
+      #addWrapper{
+          color:white;
+          background-color: #a36b00;
+          cursor: pointer;
+          padding-left: 10px;
+          padding-right: 10px;
+          margin-left: 50px;
+          font-size: 16px;
+          position: absolute;
+          right: 0;
+          top:10px;
+      }
+      .reviewWrapper{
+          background-color: #22E3BF;
+          width: 100%;
+          border-bottom-color: aliceblue;
+          border-bottom-style: solid;
+          border-bottom-width: 1px;
+      }
+      .review{
+          padding: 10px;
+      }
+      .authorname{
+          font-size: 24px;
+          font-weight: bolder;
+      }
+      
+      paper-input, paper-textarea{
+          --paper-input-container-color: black;
+      }
+      .sliderTitle{
+          padding-top: 10px;
+          font-size:12px;
+          color: black;
+      }
+      paper-slider.teal {
+        --paper-slider-knob-color: var(--paper-teal-500);
+        --paper-slider-active-color: var(--paper-teal-500);
+        --paper-slider-pin-color: var(--paper-teal-500);
+        --paper-slider-knob-start-border-color: var(--paper-teal-500);  
+      }
+  </style>   
+  <template>
+    <iron-ajax auto
+          url="https://maps.googleapis.com/maps/api/place/details/json?placeid=[[placeid]]&key=[[apiKey]]"
+          handle-as="json"
+          last-response="{{ajaxResponse}}"></iron-ajax>
+    <div class="backWrapper">
+      <a data-route="restaurants" href="[[baseUrl]]">
+          <paper-icon-button icon="reply"></paper-icon-button>
+      </a>
+    </div>  
+    <div class="bannerWrapper">
+        <div class="banner">
+            <div class="imageWrapper">
+                <template is="dom-if" if="[[ajaxResponse.result.photos.0.photo_reference]]">
+                    <iron-image src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[ajaxResponse.result.photos.0.photo_reference]]&key=[[apiKey]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.result.name]]" preload fade></iron-image>   
+                </template>   
+            </div>
+            <div class="textWrapper">
+                <br/><br/>
+                <h2>[[ajaxResponse.result.name]]:</h2>
+                <div >
+                    <paper-icon-button icon="home" disabled></paper-icon-button>[[ajaxResponse.result.formatted_address]]
+                </div>
+                <div >
+                    <paper-icon-button icon="perm-phone-msg" disabled></paper-icon-button>[[ajaxResponse.result.formatted_phone_number]] 
+                </div>     
+            </div>
+            
+            <section onclick="clickHandler(event)">
+               <div data-dialog="dialog" id="addWrapper"  aria-label="open add review form" >
+                   <paper-icon-button icon="add-circle" ></paper-icon-button>
+                    <span>ADD REVIEW</span>
+               </div>
+                
+
+                <paper-dialog id="dialog" modal>
+                    <h2>Add review</h2>
+                    <paper-dialog-scrollable>
+                        <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="reviewform">
+                            <paper-input label="NAME" name="name" aria-label="name" autofocus required></paper-input>
+                            <label for="rating">
+                                <div class="sliderTitle">RATING</div>
+                                <paper-slider class="teal" name="rating" id="rating" editable="true" pin snaps min="1" max="5" max-markers="5" step="1" value="1" aria-label="rating" ></paper-slider>    
+                            </label>
+                            <paper-textarea label="REVIEW" name="review" value="{{textvalue::input}}" placeholder="your review" aria-label="review" required></paper-textarea>    
+                        </form>   
+                    </paper-dialog-scrollable>
+                    <div class="buttons">
+                        <paper-button on-click="closeForm" aria-label="close review form" >Cancel</paper-button>
+                        <paper-button on-click="submitForm" aria-label="submit review form" >OK</paper-button>
+                    </div>
+                </paper-dialog> 
+            </section>
+              
+        </div>   
+    </div>
+    
+    <template is="dom-repeat" items="{{fakeReview}}">
+      <div class="reviewWrapper">
+          <div class="review">   
+            <div class="authorname">[[item.author_name]]</div>
+            <div>[[item.time]]</div>
+            <br/>
+            <div>RATING: [[item.rating]]/5</div>
+            <br/>
+            <div>[[item.text]]</div><br/>
+          </div>
+      </div>
+    </template>
+     
+     <template is="dom-repeat" items="[[ajaxResponse.result.reviews]]">
+      <div class="reviewWrapper">
+          <div class="review">   
+            <div class="authorname">[[item.author_name]]</div>
+            <div><epoch-time time-string="[[item.time]]"></epoch-time></div>
+            <br/>
+            <div>RATING: [[item.rating]]/5</div>
+            <br/>
+            <div>[[item.text]]</div><br/>
+          </div>
+      </div>
+    </template>
+    
+  </template>
+
+  <script>
+      function clickHandler(e) {
+          var button = e.target;
+          while (!button.hasAttribute('data-dialog') && button !== document.body) {
+            button = button.parentElement;
+          }
+          if (!button.hasAttribute('data-dialog')) {
+            return;
+          }
+          var id = button.getAttribute('data-dialog');
+          var dialog = document.getElementById(id);
+          if (dialog) {
+            dialog.open();
+          }
+      }
+      
+      Polymer({
+        is: 'food-review',
+
+        properties: {
+          placeid:{
+            type: String,
+            value: '',
+            notify: true      
+          },              
+          apiKey:{
+            type: String,
+            value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
+            notify: false  
+          },
+          fakeReview:{
+            type: Array,
+            value: function(){return []},
+            notify: true  
+          },
+          textvalue:{
+            type: String,
+            value: ''    
+          }    
+        }, 
+          
+        listeners: {
+            'reviewform.iron-form-submit': 'formSubmit'
+        },
+        formSubmit: function(event) {
+            var reviewObj={};
+            reviewObj.author_name= event.target.request.params['name'];
+            reviewObj.time= this.getNowDate();
+            reviewObj.rating= event.target.request.params['rating'];
+            reviewObj.text= event.target.request.params['review'];
+            this.unshift('fakeReview', reviewObj);
+            console.log(this.fakeReview);
+            document.getElementById('reviewform').reset();
+            this.textvalue="";
+            document.getElementById('dialog').close();
+        },
+        getNowDate: function(){
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = (1 + date.getMonth()).toString();
+            month = month.length > 1 ? month : '0' + month;
+            var day = date.getDate().toString();
+            day = day.length > 1 ? day : '0' + day;
+            return  month + '/' + day + '/' + year;
+        },
+        submitForm: function () {
+            document.getElementById('reviewform').submit();
+        },
+        closeForm: function () {
+            document.getElementById('reviewform').reset();
+            this.textvalue="";
+            document.getElementById('dialog').close();
+        }    
+      });
+  </script>
+</dom-module>

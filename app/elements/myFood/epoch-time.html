@@ -1,0 +1,40 @@
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="epoch-time">
+  <style>
+  </style>
+     
+  <template>    
+    {{convertedString}}
+  </template>
+
+  <script>  
+      Polymer({
+        is: 'epoch-time',
+
+        properties: {
+            convertedString:{
+                type: String,
+                value: ""
+            },
+            timeString:{
+                type: String,
+                observer: '_timeStringChanged'
+            }
+        },
+        _timeStringChanged: function(newValue, oldValue) {
+            var date = new Date(0);
+            date.setUTCSeconds(parseInt(newValue));
+            var year = date.getFullYear();
+            var month = (1 + date.getMonth()).toString();
+            month = month.length > 1 ? month : '0' + month;
+            var day = date.getDate().toString();
+            day = day.length > 1 ? day : '0' + day;
+            
+            this.convertedString =  month + '/' + day + '/' + year;
+        },  
+          
+      });
+  </script>
+</dom-module>
