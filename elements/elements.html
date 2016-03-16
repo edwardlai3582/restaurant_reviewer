@@ -24649,8 +24649,9 @@ event and do your own custom submission:
         <template is="dom-repeat" items="{{ajaxResult}}">
             <paper-card heading="[[item.name]]" class="white">
                 <div class="card-content">
-                    <template is="dom-if" if="[[item.photos.0.photo_reference]]">
-                        <iron-image height="260" src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&amp;photoreference=[[item.photos.0.photo_reference]]&amp;key=[[apiKey]]" alt="[[item.name]]" fade="" preload=""></iron-image>
+                   
+                    <template is="dom-if" if="[[item.photourl]]">
+                        <iron-image height="260" src="[[item.photourl]]" alt="[[item.name]]" fade="" preload=""></iron-image>
                     </template>
                     <div class="food-rating">
                         <template is="dom-if" if="[[item.rating]]">    
@@ -24658,18 +24659,20 @@ event and do your own custom submission:
                         </template>
                     </div>
                     <div class="food-price">
-                        <template is="dom-if" if="[[item.rating]]">    
+                        <template is="dom-if" if="[[item.price_level]]">    
                             PRICE LEVEL: [[item.price_level]]
                         </template>
                     </div>
                     
-                    <template is="dom-if" if="[[item.opening_hours.open_now]]">    
+                    <template is="dom-if" if="[[item.hasopening_hours]]">
+                        <template is="dom-if" if="[[item.open_now]]">    
                         <div class="open">OPEN NOW</div>
+                        </template>
+                        <template is="dom-if" if="[[!item.open_now]]">    
+                            <div class="close">CLOSED</div>
+                        </template>    
                     </template>
-                    <template is="dom-if" if="[[!item.opening_hours.open_now]]">    
-                        <div class="close">CLOSED</div>
-                    </template>
-                        
+                      
                     <p class="vicinity">[[item.vicinity]]</p>
                 </div>
                 <div class="card-actions">
@@ -24724,10 +24727,10 @@ event and do your own custom submission:
       }
   </style>   
   <template>
-    <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="foodform">
+   
+    <form is="iron-form" method="get" action="/" id="foodform">
         <paper-input label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus="" required=""></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
-          
         <paper-input label="KEYWORD" aria-label="keyword" name="keyword" placeholder="burrito, Thai..." required=""></paper-input>
         
         <label for="radius">
@@ -24779,6 +24782,9 @@ event and do your own custom submission:
             value:'168,168',
             notify: true
           },
+          locationObj:{
+            type: Object,  
+          },    
         ajaxResult:{
             type: Array,
             //value: '',//function() { return []; },
@@ -24797,21 +24803,61 @@ event and do your own custom submission:
           
         listeners: {
             'foodform.iron-form-response': 'formResponse',
-            'foodform.iron-form-presubmit': 'formPreSubmit'
+            'foodform.iron-form-presubmit': 'formPreSubmit',
+            'foodform.iron-form-submit': 'formSubmit'
         },
         formPreSubmit: function(event) {
-            event.target.request.params['radius'] = event.target.request.params['radius']*1000;
-            event.target.request.params['type'] = 'food';
-            event.target.request.params['location'] = this.locationinLatLng;
-            event.target.request.params['key'] = this.apiKey;
+            //event.target.request.params['radius'] = event.target.request.params['radius']*1000;
+            //event.target.request.params['type'] = 'food';
+            //event.target.request.params['location'] = this.locationinLatLng;
+            //event.target.request.params['key'] = this.apiKey;  
         },
+        
+        formSubmit: function(event) {
+            var request = {
+                location: this.locationObj,
+                radius: event.target.request.params['radius']*1000,
+                types: ['food'],
+                maxprice :  event.target.request.params['maxprice'],
+                keyword  :  event.target.request.params['keyword'], 
+            };
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    this.ajaxResult=[];
+                    for(var i=0; i<results.length; i++){
+                        var tempObj={};
+                        tempObj.name=results[i].name;
+                        if(results[i].photos){
+                          //console.log(results[i].photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400}));
+                          tempObj.photourl=results[i].photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400});    
+                        }
+                        tempObj.rating=results[i].rating;
+                        tempObj.price_level=results[i].price_level;
+                        //console.log(results[i].opening_hours);
+                        if(typeof results[i].opening_hours!== "undefined"){
+                            tempObj.hasopening_hours=true;
+                            if(typeof results[i].opening_hours.open_now!== "undefined"){
+                                tempObj.open_now=results[i].opening_hours.open_now;    
+                            }   
+                        }
+                        tempObj.vicinity=results[i].vicinity;
+                        tempObj.place_id=results[i].place_id;
+                        this.push("ajaxResult",tempObj);
+                    }
+                    this.set("showForm", false);
+                }
+            }          
+            
+            this.service = new google.maps.places.PlacesService(document.createElement('div'));
+            this.service.nearbySearch(request, callback.bind(this));
+        },
+
         formResponse: function(event) {
-            console.log(event);
-            //this.ajaxResponse=event.detail.response;
-            this.set("showForm", false);
-            this.set("ajaxResult", event.detail.response.results)
-            //this.ajaxResult=JSON.stringify(event.detail.response.results);
-            console.log(this.ajaxResult);
+            //console.log(event);
+            //this.set("showForm", false);
+            //this.set("ajaxResult", event.detail.response.results);
+            //console.log(this.ajaxResult);
         }, 
           
         on_api_load: function () {
@@ -24824,10 +24870,9 @@ event and do your own custom submission:
             return;
           }
           this.addressvalue = this.place.formatted_address;
-          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();
-
+          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();   this.locationObj= this.place.geometry.location;     
         },
- 
+
           
       });
              
@@ -25738,7 +25783,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
   </style>   
   <template>
-    <iron-ajax auto="" url="https://maps.googleapis.com/maps/api/place/details/json?placeid=[[placeid]]&amp;key=[[apiKey]]" handle-as="json" last-response="{{ajaxResponse}}"></iron-ajax>
+    
+    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>      
     <div class="backWrapper">
       <a data-route="restaurants" href="[[baseUrl]]">
           <paper-icon-button icon="reply"></paper-icon-button>
@@ -25747,21 +25793,22 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     <div class="bannerWrapper">
         <div class="banner">
             <div class="imageWrapper">
-                <template is="dom-if" if="[[ajaxResponse.result.photos.0.photo_reference]]">
-                    <iron-image src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&amp;photoreference=[[ajaxResponse.result.photos.0.photo_reference]]&amp;key=[[apiKey]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.result.name]]" preload="" fade=""></iron-image>   
+                <template is="dom-if" if="[[ajaxResult.photourl]]">
+                    <iron-image src="[[ajaxResult.photourl]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.name]]" preload="" fade=""></iron-image>   
                 </template>   
             </div>
             <div class="textWrapper">
                 <br><br>
-                <h2>[[ajaxResponse.result.name]]:</h2>
+                <h2>[[ajaxResult.name]]:</h2>
                 <div>
-                    <paper-icon-button icon="home" disabled=""></paper-icon-button>[[ajaxResponse.result.formatted_address]]
+                    <paper-icon-button icon="home" disabled=""></paper-icon-button>[[ajaxResult.formatted_address]]
                 </div>
                 <div>
-                    <paper-icon-button icon="perm-phone-msg" disabled=""></paper-icon-button>[[ajaxResponse.result.formatted_phone_number]] 
+                    <paper-icon-button icon="perm-phone-msg" disabled=""></paper-icon-button>
+                    [[ajaxResult.formatted_phone_number]]
                 </div>     
             </div>
-            
+           
             <section onclick="clickHandler(event)">
                <div data-dialog="dialog" id="addWrapper" aria-label="open add review form">
                    <paper-icon-button icon="add-circle"></paper-icon-button>
@@ -25804,7 +25851,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       </div>
     </template>
      
-     <template is="dom-repeat" items="[[ajaxResponse.result.reviews]]">
+     <template is="dom-repeat" items="[[ajaxResult.reviews]]">
       <div class="reviewWrapper">
           <div class="review">   
             <div class="authorname">[[item.author_name]]</div>
@@ -25842,7 +25889,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           placeid:{
             type: String,
             value: '',
-            notify: true      
+            notify: true,
+            observer: '_placeidChanged'  
           },              
           apiKey:{
             type: String,
@@ -25857,9 +25905,13 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           textvalue:{
             type: String,
             value: ''    
+          },
+          ajaxResult:{
+            type: Object,
+            value: function(){return {}},  
           }    
         }, 
-          
+        
         listeners: {
             'reviewform.iron-form-submit': 'formSubmit'
         },
@@ -25891,7 +25943,45 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
             document.getElementById('reviewform').reset();
             this.textvalue="";
             document.getElementById('dialog').close();
-        }    
+        },
+        on_api_load: function () {
+            //this.autocomplete = new google.maps.places.Autocomplete(this.$.addressinput, {});
+            //this.service = new google.maps.places.PlacesService(document.createElement('div'));
+        },
+          
+        _placeidChanged: function(newValue, oldValue){
+            console.log("new:"+newValue);
+            console.log("old:"+oldValue);
+            if (newValue=== ""&& typeof oldValue=== "undefined")  return  ;
+            
+            
+            var request = {
+                placeId: newValue
+            };
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    var tempObj={};
+                    tempObj.name=results.name;
+                    tempObj.formatted_address=results.formatted_address;
+                    tempObj.formatted_phone_number=results.formatted_phone_number;
+                    tempObj.reviews=results.reviews;
+                        if(results.photos){
+                          tempObj.photourl=results.photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400});    
+                        }
+                        tempObj.rating=results.rating;
+                    this.set("ajaxResult", tempObj);
+                    console.log(results.opening_hours);
+                    
+                }
+            } 
+            
+            function qq(){
+                this.service = new google.maps.places.PlacesService(document.createElement('div'));
+                this.service.getDetails(request, callback.bind(this));      
+            }
+            setTimeout(qq.bind(this), 500);
+        },   
       });
   </script>
 </dom-module>
