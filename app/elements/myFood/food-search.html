@@ -128,7 +128,8 @@
                 radius: event.target.request.params['radius']*1000,
                 types: ['food'],
                 maxprice :  event.target.request.params['maxprice'],
-                keyword  :  event.target.request.params['keyword'], 
+                keyword  :  event.target.request.params['keyword'],
+                openNow : event.target.request.params['opennow'],
             };
 
             function callback(results, status) {
@@ -155,6 +156,7 @@
                         this.push("ajaxResult",tempObj);
                     }
                     this.set("showForm", false);
+                    window.scrollTo(0, 0);
                 }
             }          
             
