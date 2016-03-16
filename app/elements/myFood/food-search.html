@@ -36,10 +36,10 @@
       }
   </style>   
   <template>
-    <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="foodform">
+   <!--https://maps.googleapis.com/maps/api/place/nearbysearch/json? -->
+    <form is="iron-form" method="get" action="/" id="foodform">
         <paper-input  label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
-          
         <paper-input label="KEYWORD" aria-label="keyword" name="keyword" placeholder="burrito, Thai..." required></paper-input>
         
         <label for="radius">
@@ -91,6 +91,9 @@
             value:'168,168',
             notify: true
           },
+          locationObj:{
+            type: Object,  
+          },    
         ajaxResult:{
             type: Array,
             //value: '',//function() { return []; },
@@ -109,21 +112,61 @@
           
         listeners: {
             'foodform.iron-form-response': 'formResponse',
-            'foodform.iron-form-presubmit': 'formPreSubmit'
+            'foodform.iron-form-presubmit': 'formPreSubmit',
+            'foodform.iron-form-submit': 'formSubmit'
         },
         formPreSubmit: function(event) {
-            event.target.request.params['radius'] = event.target.request.params['radius']*1000;
-            event.target.request.params['type'] = 'food';
-            event.target.request.params['location'] = this.locationinLatLng;
-            event.target.request.params['key'] = this.apiKey;
+            //event.target.request.params['radius'] = event.target.request.params['radius']*1000;
+            //event.target.request.params['type'] = 'food';
+            //event.target.request.params['location'] = this.locationinLatLng;
+            //event.target.request.params['key'] = this.apiKey;  
         },
+        
+        formSubmit: function(event) {
+            var request = {
+                location: this.locationObj,
+                radius: event.target.request.params['radius']*1000,
+                types: ['food'],
+                maxprice :  event.target.request.params['maxprice'],
+                keyword  :  event.target.request.params['keyword'], 
+            };
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    this.ajaxResult=[];
+                    for(var i=0; i<results.length; i++){
+                        var tempObj={};
+                        tempObj.name=results[i].name;
+                        if(results[i].photos){
+                          //console.log(results[i].photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400}));
+                          tempObj.photourl=results[i].photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400});    
+                        }
+                        tempObj.rating=results[i].rating;
+                        tempObj.price_level=results[i].price_level;
+                        //console.log(results[i].opening_hours);
+                        if(typeof results[i].opening_hours!== "undefined"){
+                            tempObj.hasopening_hours=true;
+                            if(typeof results[i].opening_hours.open_now!== "undefined"){
+                                tempObj.open_now=results[i].opening_hours.open_now;    
+                            }   
+                        }
+                        tempObj.vicinity=results[i].vicinity;
+                        tempObj.place_id=results[i].place_id;
+                        this.push("ajaxResult",tempObj);
+                    }
+                    this.set("showForm", false);
+                }
+            }          
+            
+            this.service = new google.maps.places.PlacesService(document.createElement('div'));
+            this.service.nearbySearch(request, callback.bind(this));
+        },
+
         formResponse: function(event) {
-            console.log(event);
-            //this.ajaxResponse=event.detail.response;
-            this.set("showForm", false);
-            this.set("ajaxResult", event.detail.response.results)
-            //this.ajaxResult=JSON.stringify(event.detail.response.results);
-            console.log(this.ajaxResult);
+            //console.log(event);
+            //this.set("showForm", false);
+            //this.set("ajaxResult", event.detail.response.results);
+            //console.log(this.ajaxResult);
         }, 
           
         on_api_load: function () {
@@ -136,10 +179,9 @@
             return;
           }
           this.addressvalue = this.place.formatted_address;
-          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();
-
+          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();   this.locationObj= this.place.geometry.location;     
         },
- 
+
           
       });
              
