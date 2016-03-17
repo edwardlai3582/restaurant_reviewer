@@ -87,6 +87,10 @@
         --paper-slider-pin-color: var(--paper-teal-500);
         --paper-slider-knob-start-border-color: var(--paper-teal-500);  
       }
+      paper-dialog {
+        width: 440px;
+        
+      }
   </style>   
   <template>
     <!--<iron-ajax auto
@@ -127,16 +131,17 @@
 
                 <paper-dialog id="dialog" modal>
                     <h2>Add review</h2>
-                    <paper-dialog-scrollable>
+                      <paper-dialog-scrollable>
                         <form is="iron-form" method="get" action="/" id="reviewform">
                             <paper-input label="NAME" name="name" aria-label="name" autofocus required></paper-input>
                             <label for="rating">
                                 <div class="sliderTitle">RATING</div>
                                 <paper-slider class="teal" name="rating" id="rating" editable="true" pin snaps min="1" max="5" max-markers="5" step="1" value="1" aria-label="rating" ></paper-slider>    
                             </label>
-                            <paper-textarea label="REVIEW" name="review" value="{{textvalue::input}}" placeholder="your review" aria-label="review" required></paper-textarea>    
+                            
+                            <paper-textarea max-rows="2" label="REVIEW" name="review" value="{{textvalue::input}}" placeholder="your review" aria-label="review" required></paper-textarea>   
                         </form>   
-                    </paper-dialog-scrollable>
+                      </paper-dialog-scrollable> 
                     <div class="buttons">
                         <paper-button on-click="closeForm" aria-label="close review form" >Cancel</paper-button>
                         <paper-button on-click="submitForm" aria-label="submit review form" >OK</paper-button>
