@@ -10,6 +10,7 @@
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="./epoch-time.html">
 
 <dom-module id="food-review">
@@ -88,10 +89,11 @@
       }
   </style>   
   <template>
-    <iron-ajax auto
+    <!--<iron-ajax auto
           url="https://maps.googleapis.com/maps/api/place/details/json?placeid=[[placeid]]&key=[[apiKey]]"
           handle-as="json"
-          last-response="{{ajaxResponse}}"></iron-ajax>
+          last-response="{{ajaxResponse}}"></iron-ajax>-->
+    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>      
     <div class="backWrapper">
       <a data-route="restaurants" href="[[baseUrl]]">
           <paper-icon-button icon="reply"></paper-icon-button>
@@ -100,21 +102,22 @@
     <div class="bannerWrapper">
         <div class="banner">
             <div class="imageWrapper">
-                <template is="dom-if" if="[[ajaxResponse.result.photos.0.photo_reference]]">
-                    <iron-image src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[ajaxResponse.result.photos.0.photo_reference]]&key=[[apiKey]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.result.name]]" preload fade></iron-image>   
+                <template is="dom-if" if="[[ajaxResult.photourl]]">
+                    <iron-image src="[[ajaxResult.photourl]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.name]]" preload fade></iron-image>   
                 </template>   
             </div>
             <div class="textWrapper">
                 <br/><br/>
-                <h2>[[ajaxResponse.result.name]]</h2>
+                <h2>[[ajaxResult.name]]</h2>
                 <div >
-                    <paper-icon-button icon="home" disabled></paper-icon-button>[[ajaxResponse.result.formatted_address]]
+                    <paper-icon-button icon="home" disabled></paper-icon-button>[[ajaxResult.formatted_address]]
                 </div>
                 <div >
-                    <paper-icon-button icon="perm-phone-msg" disabled></paper-icon-button>[[ajaxResponse.result.formatted_phone_number]] 
+                    <paper-icon-button icon="perm-phone-msg" disabled></paper-icon-button>
+                    [[ajaxResult.formatted_phone_number]]
                 </div>     
             </div>
-            
+           
             <section onclick="clickHandler(event)">
                <div data-dialog="dialog" id="addWrapper"  aria-label="open add review form" >
                    <paper-icon-button icon="add-circle" ></paper-icon-button>
@@ -125,7 +128,7 @@
                 <paper-dialog id="dialog" modal>
                     <h2>Add review</h2>
                     <paper-dialog-scrollable>
-                        <form is="iron-form" method="get" action="https://maps.googleapis.com/maps/api/place/nearbysearch/json?" id="reviewform">
+                        <form is="iron-form" method="get" action="/" id="reviewform">
                             <paper-input label="NAME" name="name" aria-label="name" autofocus required></paper-input>
                             <label for="rating">
                                 <div class="sliderTitle">RATING</div>
@@ -157,7 +160,7 @@
       </div>
     </template>
      
-     <template is="dom-repeat" items="[[ajaxResponse.result.reviews]]">
+     <template is="dom-repeat" items="[[ajaxResult.reviews]]">
       <div class="reviewWrapper">
           <div class="review">   
             <div class="authorname">[[item.author_name]]</div>
@@ -195,7 +198,8 @@
           placeid:{
             type: String,
             value: '',
-            notify: true      
+            notify: true,
+            observer: '_placeidChanged'  
           },              
           apiKey:{
             type: String,
@@ -210,9 +214,13 @@
           textvalue:{
             type: String,
             value: ''    
+          },
+          ajaxResult:{
+            type: Object,
+            value: function(){return {}},  
           }    
         }, 
-          
+        
         listeners: {
             'reviewform.iron-form-submit': 'formSubmit'
         },
@@ -244,7 +252,45 @@
             document.getElementById('reviewform').reset();
             this.textvalue="";
             document.getElementById('dialog').close();
-        }    
+        },
+        on_api_load: function () {
+            //this.autocomplete = new google.maps.places.Autocomplete(this.$.addressinput, {});
+            //this.service = new google.maps.places.PlacesService(document.createElement('div'));
+        },
+          
+        _placeidChanged: function(newValue, oldValue){
+            console.log("new:"+newValue);
+            console.log("old:"+oldValue);
+            if (newValue=== ""&& typeof oldValue=== "undefined")  return  ;
+            
+            
+            var request = {
+                placeId: newValue
+            };
+
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    var tempObj={};
+                    tempObj.name=results.name;
+                    tempObj.formatted_address=results.formatted_address;
+                    tempObj.formatted_phone_number=results.formatted_phone_number;
+                    tempObj.reviews=results.reviews;
+                        if(results.photos){
+                          tempObj.photourl=results.photos[0].getUrl({'maxWidth': 400, 'maxHeight': 400});    
+                        }
+                        tempObj.rating=results.rating;
+                    this.set("ajaxResult", tempObj);
+                    console.log(results.opening_hours);
+                    
+                }
+            } 
+            
+            function qq(){
+                this.service = new google.maps.places.PlacesService(document.createElement('div'));
+                this.service.getDetails(request, callback.bind(this));      
+            }
+            setTimeout(qq.bind(this), 250);
+        },   
       });
   </script>
 </dom-module>

@@ -52,8 +52,9 @@
         <template is="dom-repeat" items="{{ajaxResult}}">
             <paper-card heading="[[item.name]]" class="white">
                 <div class="card-content">
-                    <template is="dom-if" if="[[item.photos.0.photo_reference]]">
-                        <iron-image height="260" src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[item.photos.0.photo_reference]]&key=[[apiKey]]" alt="[[item.name]]" fade preload></iron-image>
+                   <!--https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[item.photos.0.photo_reference]]&key=[[apiKey]]-->
+                    <template is="dom-if" if="[[item.photourl]]">
+                        <iron-image height="260" src="[[item.photourl]]" alt="[[item.name]]" fade preload></iron-image>
                     </template>
                     <div class="food-rating">
                         <template is="dom-if" if="[[item.rating]]">    
@@ -61,18 +62,20 @@
                         </template>
                     </div>
                     <div class="food-price">
-                        <template is="dom-if" if="[[item.rating]]">    
+                        <template is="dom-if" if="[[item.price_level]]">    
                             PRICE LEVEL: [[item.price_level]]
                         </template>
                     </div>
-                    
-                    <template is="dom-if" if="[[item.opening_hours.open_now]]">    
+                    <!--[[item.opening_hours.open_now]]-->
+                    <template is="dom-if" if="[[item.hasopening_hours]]">
+                        <template is="dom-if" if="[[item.open_now]]">    
                         <div class="open">OPEN NOW</div>
+                        </template>
+                        <template is="dom-if" if="[[!item.open_now]]">    
+                            <div class="close">CLOSED</div>
+                        </template>    
                     </template>
-                    <template is="dom-if" if="[[!item.opening_hours.open_now]]">    
-                        <div class="close">CLOSED</div>
-                    </template>
-                        
+                      
                     <p class="vicinity">[[item.vicinity]]</p>
                 </div>
                 <div class="card-actions">
