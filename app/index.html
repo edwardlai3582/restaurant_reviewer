@@ -41,11 +41,11 @@ t=t.parentNode||t.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&t.host}}function h(e){
         <div class="content">
             <iron-pages attr-for-selected="data-route" selected="{{route}}">
                 <section data-route="restaurants">
-                    <search-list base-url="/"></search-list>       
+                    <search-list></search-list>       
                 </section>
 
                 <section data-route="restaurant-info">
-                    <food-review placeid="{{params.placeid}}" base-url="/"></food-review>
+                    <food-review placeid="{{params.placeid}}"></food-review>
                 </section>
             </iron-pages>
         </div>
