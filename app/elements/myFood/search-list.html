@@ -72,15 +72,16 @@
     
     <div id="listWrapper">
         <food-list base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
-    </div>     
-  </template>
-  
-  <template is="dom-if" if="{{noResult}}">
+    </div>
+    
+      <template is="dom-if" if="{{noResult}}">
        <paper-material elevation="1" id="zero_result">
            0 results    
        </paper-material>
     </template>            
-  </template>
+  </template>          
+
+
 
   <script>  
       Polymer({
