@@ -42,6 +42,13 @@
           position: relative;
           top:20px;
       }
+      
+      #zero_result{
+          margin-top: 20px;
+          text-align: center;
+          padding-top: 10px;
+          padding-bottom: 10px;
+      }
   </style>   
   <template>
     <template is="dom-if" if="{{!showForm}}">    
@@ -58,14 +65,20 @@
     <template is="dom-if" if="{{showForm}}">    
         <div id="formWrapper">
             <div id="form">
-                <food-search show-form="{{showForm}}" ajax-result="{{ajaxResult}}"></food-search>
+                <food-search show-form="{{showForm}}" no-result="{{noResult}}" ajax-result="{{ajaxResult}}"></food-search>
             </div>
         </div>
     </template>
     
     <div id="listWrapper">
         <food-list base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
-    </div>     
+    </div>
+    
+    <template is="dom-if" if="{{noResult}}">
+       <paper-material elevation="1" id="zero_result">
+           0 results    
+       </paper-material>
+    </template>            
   </template>
 
   <script>  
@@ -84,6 +97,11 @@
                 notify: true,
             },
             showForm:{
+                type: Boolean,
+                value: false,
+                notify: true
+            },
+            noResult:{
                 type: Boolean,
                 value: false,
                 notify: true
