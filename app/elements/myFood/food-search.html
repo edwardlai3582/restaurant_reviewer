@@ -38,7 +38,7 @@
   <template>
    <!--https://maps.googleapis.com/maps/api/place/nearbysearch/json? -->
     <form is="iron-form" method="get" action="/" id="foodform">
-        <paper-input  label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
+        <paper-input on-blur="getGeo" label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
         <paper-input label="KEYWORD" aria-label="keyword" name="keyword" placeholder="burrito, Thai..." required></paper-input>
         
@@ -107,7 +107,11 @@
             type: Object,
             value: function () { return {}; },
             notify: true
-          }    
+          },
+          noResult:{
+            type: Boolean, 
+            notify: true
+          }     
         },
           
         listeners: {
@@ -115,6 +119,25 @@
             'foodform.iron-form-presubmit': 'formPreSubmit',
             'foodform.iron-form-submit': 'formSubmit'
         },
+          
+        getGeo:function(){
+            var firstoption=document.querySelector(".pac-container .pac-item").innerHTML.replace(/<[^>]*>/g, " ");
+            console.log(firstoption);
+            this.addressvalue = firstoption;
+            //addressvalue
+            this.geocoder = new google.maps.Geocoder();
+            this.geocoder.geocode({address: firstoption}, function(results, status) {
+              if (status == google.maps.GeocoderStatus.OK) {
+                console.log(results);
+                //this.addressvalue = results[0].formatted_address;
+                this.locationObj= results[0].geometry.location;   
+              }
+              else {
+                console.error("Geocode was not successful for the following reason: " + status);
+              }
+            }.bind(this));
+        },   
+          
         formPreSubmit: function(event) {
             //event.target.request.params['radius'] = event.target.request.params['radius']*1000;
             //event.target.request.params['type'] = 'food';
@@ -137,6 +160,7 @@
             function callback(results, status) {
                 if (status == google.maps.places.PlacesServiceStatus.OK) {
                     this.ajaxResult=[];
+                    this.set("noResult", false);
                     for(var i=0; i<results.length; i++){
                         var tempObj={};
                         tempObj.name=results[i].name;
@@ -159,6 +183,15 @@
                     }
                     this.set("showForm", false);
                     window.scrollTo(0, 0);
+                }
+                else{
+                    console.log("Geocode was not successful for the following reason: " + status);
+            
+                    if(status==="ZERO_RESULTS"){
+                        console.log(status);
+                        this.set("showForm", false);
+                        this.set("noResult", true);
+                    }
                 }
             }          
             
