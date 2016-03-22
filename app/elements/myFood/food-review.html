@@ -15,7 +15,7 @@
 
 <dom-module id="food-review">
   <style>
-      .backWrapper{
+      nav{
           background-color: #a36b00;
           position: fixed;
           top: 5px;
@@ -28,6 +28,7 @@
       .bannerWrapper{
           position: relative;
           margin-top: 50px;
+          display: block;
       }
       .banner{
           background-color: teal;
@@ -58,15 +59,13 @@
           right: 0;
           top:10px;
       }
-      .reviewWrapper{
+      .review{
+          width: 98%;
+          padding: 1%;
           background-color: #22E3BF;
-          width: 100%;
           border-bottom-color: aliceblue;
           border-bottom-style: solid;
           border-bottom-width: 1px;
-      }
-      .review{
-          padding: 10px;
       }
       .authorname{
           font-size: 24px;
@@ -93,37 +92,36 @@
       }
   </style>   
   <template>
-    <!--<iron-ajax auto
-          url="https://maps.googleapis.com/maps/api/place/details/json?placeid=[[placeid]]&key=[[apiKey]]"
-          handle-as="json"
-          last-response="{{ajaxResponse}}"></iron-ajax>-->
-    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>      
-    <div class="backWrapper">
+    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>  
+        
+    <nav>
       <a data-route="restaurants" href$="[[baseUrl]]">
           <paper-icon-button icon="reply"></paper-icon-button>
       </a>
-    </div>  
-    <div class="bannerWrapper">
-        <div class="banner">
-            <div class="imageWrapper">
+    </nav>
+      
+    <section class="bannerWrapper">
+        <header class="banner">
+            <figure class="imageWrapper">
                 <template is="dom-if" if="[[ajaxResult.photourl]]">
                     <iron-image src="[[ajaxResult.photourl]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.name]]" preload fade></iron-image>   
                 </template>   
-            </div>
-            <div class="textWrapper">
+            </figure>
+            
+            <article class="textWrapper">
                 <br/><br/>
                 <h2>[[ajaxResult.name]]</h2>
-                <div >
+                <p>
                     <paper-icon-button icon="home" disabled></paper-icon-button>[[ajaxResult.formatted_address]]
-                </div>
-                <div >
+                </p>
+                <p>
                     <paper-icon-button icon="perm-phone-msg" disabled></paper-icon-button>
                     [[ajaxResult.formatted_phone_number]]
-                </div>     
-            </div>
+                </p>     
+            </article>
            
             <section onclick="clickHandler(event)">
-               <div data-dialog="dialog" id="addWrapper"  aria-label="open add review form" >
+               <div data-dialog="dialog" id="addWrapper"  aria-label="add review">
                    <paper-icon-button icon="add-circle" ></paper-icon-button>
                     <span>ADD REVIEW</span>
                </div>
@@ -143,39 +141,31 @@
                         </form>   
                       </paper-dialog-scrollable> 
                     <div class="buttons">
-                        <paper-button on-click="closeForm" aria-label="close review form" >Cancel</paper-button>
-                        <paper-button on-click="submitForm" aria-label="submit review form" >OK</paper-button>
+                        <paper-button on-click="closeForm" aria-label="close" >Cancel</paper-button>
+                        <paper-button on-click="submitForm" aria-label="submit" >OK</paper-button>
                     </div>
                 </paper-dialog> 
             </section>
               
-        </div>   
-    </div>
+        </header>   
+    </section>
     
     <template is="dom-repeat" items="{{fakeReview}}">
-      <div class="reviewWrapper">
-          <div class="review">   
-            <div class="authorname">[[item.author_name]]</div>
-            <div>[[item.time]]</div>
-            <br/>
-            <div>RATING: [[item.rating]]/5</div>
-            <br/>
-            <div>[[item.text]]</div><br/>
-          </div>
-      </div>
+          <article class="review">   
+            <p class="authorname">[[item.author_name]]</p>
+            <p>[[item.time]]</p>
+            <p>RATING: [[item.rating]]/5</p>
+            <p>[[item.text]]</p>
+          </article>
     </template>
      
      <template is="dom-repeat" items="[[ajaxResult.reviews]]">
-      <div class="reviewWrapper">
-          <div class="review">   
-            <div class="authorname">[[item.author_name]]</div>
-            <div><epoch-time time-string="[[item.time]]"></epoch-time></div>
-            <br/>
-            <div>RATING: [[item.rating]]/5</div>
-            <br/>
-            <div>[[item.text]]</div><br/>
-          </div>
-      </div>
+          <article class="review">   
+            <p class="authorname">[[item.author_name]]</p>
+            <p><epoch-time time-string="[[item.time]]"></epoch-time></p>
+            <p>RATING: [[item.rating]]/5</p>
+            <p>[[item.text]]</p>
+          </article>
     </template>
     
   </template>
@@ -264,11 +254,10 @@
         },
           
         _placeidChanged: function(newValue, oldValue){
-            console.log("new:"+newValue);
-            console.log("old:"+oldValue);
+            //console.log("new:"+newValue);
+            //console.log("old:"+oldValue);
             if (newValue=== ""&& typeof oldValue=== "undefined")  return  ;
-            
-            
+                        
             var request = {
                 placeId: newValue
             };
@@ -290,11 +279,11 @@
                 }
             } 
             
-            function qq(){
+            function getDetails(){
                 this.service = new google.maps.places.PlacesService(document.createElement('div'));
                 this.service.getDetails(request, callback.bind(this));      
             }
-            setTimeout(qq.bind(this), 250);
+            setTimeout(getDetails.bind(this), 250);
         },   
       });
   </script>

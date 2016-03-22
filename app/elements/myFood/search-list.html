@@ -6,7 +6,7 @@
 
 <dom-module id="search-list">
   <style>
-      .searchiconWrapper{
+      .searchicon{
           background-color: #a36b00;
           position: fixed;
           top: 5px;
@@ -30,17 +30,16 @@
           border-top-style: solid;
       }
       
-      #form{
-          position: relative;
-          width: 90%;
-          left: 5%;
-          margin-bottom: 20px;
-      }
-      
       #listWrapper{
           z-index: 1;
           position: relative;
           top:20px;
+      }
+      @media all and (max-width: 600px) {
+          #listWrapper{
+              top:50px;
+              right:-5%;
+          }    
       }
       
       #zero_result{
@@ -51,28 +50,20 @@
       }
   </style>   
   <template>
-    <template is="dom-if" if="{{!showForm}}">    
-        <div class="searchiconWrapper" on-click="show">
-            <paper-icon-button aria-label="open search restaurant form" icon="search"></paper-icon-button>
-        </div>
+    <template is="dom-if" if="{{!showForm}}">   
+            <paper-icon-button class="searchicon" on-click="show" aria-label="open search restaurant form" icon="search"></paper-icon-button>
     </template>
     <template is="dom-if" if="{{showForm}}">    
-        <div class="searchiconWrapper" on-click="show">
-            <paper-icon-button aria-label="close search restaurant form" icon="close"></paper-icon-button>
-        </div>
+            <paper-icon-button class="searchicon" on-click="show" aria-label="close search restaurant form" icon="close"></paper-icon-button>
     </template> 
       
     <template is="dom-if" if="{{showForm}}">    
-        <div id="formWrapper">
-            <div id="form">
-                <food-search show-form="{{showForm}}" no-result="{{noResult}}" ajax-result="{{ajaxResult}}"></food-search>
-            </div>
-        </div>
+        <section id="formWrapper">
+            <food-search show-form="{{showForm}}" no-result="{{noResult}}" ajax-result="{{ajaxResult}}"></food-search>
+        </section>
     </template>
     
-    <div id="listWrapper">
-        <food-list base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
-    </div>
+    <food-list id="listWrapper" base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
     
     <template is="dom-if" if="{{noResult}}">
        <paper-material elevation="1" id="zero_result">
