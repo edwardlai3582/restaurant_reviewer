@@ -17,6 +17,16 @@
 
 <dom-module id="food-search">
   <style>
+      ::host{
+          display: block;
+          width:100%; 
+      }
+      #foodform{
+          position: relative;
+          width: 90%;
+          left: 5%;
+          margin-bottom: 20px;    
+      }      
       paper-input{
           --paper-input-container-color: black;
       }
@@ -36,9 +46,8 @@
       }
   </style>   
   <template>
-   <!--https://maps.googleapis.com/maps/api/place/nearbysearch/json? -->
     <form is="iron-form" method="get" action="/" id="foodform">
-        <paper-input on-blur="getGeo" label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
+        <paper-input  on-blur="getGeo" label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus  required></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
         <paper-input label="KEYWORD" aria-label="keyword" name="keyword" placeholder="burrito, Thai..." required></paper-input>
         
@@ -53,10 +62,10 @@
         </label>
         
         <label for="opennow">
-            <paper-checkbox name="opennow" aria-label="open now" value="true">OPEN NOW ONLY</paper-checkbox>     
+            <paper-checkbox name="opennow" aria-label="open now" value="true">OPEN NOW ONLY</paper-checkbox>
         </label>
         <br><br>
-        <paper-button raised aria-label="submit form" onclick="_submit(event)">Submit</paper-button>    
+        <paper-button raised aria-label="submit form" onclick="_submit(event)">Submit</paper-button>  
     </form>                            
 
   </template>
@@ -69,8 +78,8 @@
         }
         
       Polymer({
-        is: 'food-search',
-
+        is: 'food-search', 
+          
         properties: {
           showForm:{
                 type: Boolean,
@@ -94,11 +103,10 @@
           locationObj:{
             type: Object,  
           },    
-        ajaxResult:{
+          ajaxResult:{
             type: Array,
-            //value: '',//function() { return []; },
             notify: true,
-        },      
+          },      
             addressvalue: {
             type: String,
             notify: true
@@ -111,25 +119,27 @@
           noResult:{
             type: Boolean, 
             notify: true
-          }     
+          }    
         },
           
         listeners: {
             'foodform.iron-form-response': 'formResponse',
-            'foodform.iron-form-presubmit': 'formPreSubmit',
-            'foodform.iron-form-submit': 'formSubmit'
+            'foodform.iron-form-presubmit': 'formPreSubmit'
         },
-          
+        
+                
         getGeo:function(){
+            if(!document.querySelector(".pac-container .pac-item")){
+                return;
+            }
             var firstoption=document.querySelector(".pac-container .pac-item").innerHTML.replace(/<[^>]*>/g, " ");
-            console.log(firstoption);
+            //console.log(firstoption);
             this.addressvalue = firstoption;
-            //addressvalue
+            
             this.geocoder = new google.maps.Geocoder();
             this.geocoder.geocode({address: firstoption}, function(results, status) {
               if (status == google.maps.GeocoderStatus.OK) {
-                console.log(results);
-                //this.addressvalue = results[0].formatted_address;
+                //console.log(results);
                 this.locationObj= results[0].geometry.location;   
               }
               else {
@@ -137,15 +147,10 @@
               }
             }.bind(this));
         },   
-          
-        formPreSubmit: function(event) {
-            //event.target.request.params['radius'] = event.target.request.params['radius']*1000;
-            //event.target.request.params['type'] = 'food';
-            //event.target.request.params['location'] = this.locationinLatLng;
-            //event.target.request.params['key'] = this.apiKey;  
-        },
         
-        formSubmit: function(event) {
+        formPreSubmit: function(event) {
+            event.preventDefault();
+            
             var request = {
                 location: this.locationObj,
                 radius: event.target.request.params['radius']*1000,
@@ -216,7 +221,8 @@
             return;
           }
           this.addressvalue = this.place.formatted_address;
-          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();   this.locationObj= this.place.geometry.location;     
+          //this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();
+          this.locationObj= this.place.geometry.location;     
         },
 
           

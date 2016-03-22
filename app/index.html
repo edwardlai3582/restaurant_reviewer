@@ -38,7 +38,7 @@ t=t.parentNode||t.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&t.host}}function h(e){
         </paper-toolbar>
           
         <!-- Main Content -->
-        <div class="content">
+        <div class="content" role="main" aria-label="sections wrapper">
             <iron-pages attr-for-selected="data-route" selected="{{route}}">
                 <section data-route="restaurants">
                     <search-list></search-list>       

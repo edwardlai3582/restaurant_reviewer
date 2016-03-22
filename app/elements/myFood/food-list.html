@@ -28,6 +28,11 @@
     paper-card.white {
         --paper-card-header-color: black;
     }
+    paper-card iron-image{
+        width: 400px;
+        height: 260px;
+        margin-bottom: 15px;
+    }    
     .open{
         color: teal;      
     }
@@ -40,10 +45,13 @@
     .reviewlink { 
         color: var(--google-blue-500); 
     }  
-    @media all and (max-width: 500px) {
+    @media all and (max-width: 600px) {
       paper-card {
-        min-width: 90%;
+        width: 80%;
         
+      }
+      paper-card iron-image{
+            width: 100%;      
       }
     }  
   </style>
@@ -52,27 +60,24 @@
         <template is="dom-repeat" items="{{ajaxResult}}">
             <paper-card heading="[[item.name]]" class="white">
                 <div class="card-content">
-                   <!--https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=[[item.photos.0.photo_reference]]&key=[[apiKey]]-->
                     <template is="dom-if" if="[[item.photourl]]">
-                        <iron-image height="260" src="[[item.photourl]]" alt="[[item.name]]" fade preload></iron-image>
+                        <iron-image sizing="contain" src="[[item.photourl]]" alt="[[item.name]]" fade preload></iron-image>
                     </template>
-                    <div class="food-rating">
-                        <template is="dom-if" if="[[item.rating]]">    
-                            RATING: [[item.rating]]/5
-                        </template>
-                    </div>
-                    <div class="food-price">
-                        <template is="dom-if" if="[[item.price_level]]">    
-                            PRICE LEVEL: [[item.price_level]]
-                        </template>
-                    </div>
-                    <!--[[item.opening_hours.open_now]]-->
+
+                    <template is="dom-if" if="[[item.rating]]">    
+                        RATING: [[item.rating]]/5
+                    </template>
+                    
+                    <template is="dom-if" if="[[item.price_level]]">    
+                        PRICE LEVEL: [[item.price_level]]
+                    </template>
+                    
                     <template is="dom-if" if="[[item.hasopening_hours]]">
                         <template is="dom-if" if="[[item.open_now]]">    
-                        <div class="open">OPEN NOW</div>
+                            <p class="open">OPEN NOW</p>
                         </template>
                         <template is="dom-if" if="[[!item.open_now]]">    
-                            <div class="close">CLOSED</div>
+                            <p class="close">CLOSED</p>
                         </template>    
                     </template>
                       
@@ -94,11 +99,6 @@
                 type: String,
                 value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
                 notify: false  
-            },
-            baseUrl:{
-                type: String,
-                value: '',
-                notify: true  
             },
             ajaxResult:{
                 type: Array,

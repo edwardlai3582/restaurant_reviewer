@@ -24625,6 +24625,11 @@ event and do your own custom submission:
     paper-card.white {
         --paper-card-header-color: black;
     }
+    paper-card iron-image{
+        width: 400px;
+        height: 260px;
+        margin-bottom: 15px;
+    }    
     .open{
         color: teal;      
     }
@@ -24637,10 +24642,13 @@ event and do your own custom submission:
     .reviewlink { 
         color: var(--google-blue-500); 
     }  
-    @media all and (max-width: 500px) {
+    @media all and (max-width: 600px) {
       paper-card {
-        min-width: 90%;
+        width: 80%;
         
+      }
+      paper-card iron-image{
+            width: 100%;      
       }
     }  
   </style>
@@ -24649,27 +24657,24 @@ event and do your own custom submission:
         <template is="dom-repeat" items="{{ajaxResult}}">
             <paper-card heading="[[item.name]]" class="white">
                 <div class="card-content">
-                   
                     <template is="dom-if" if="[[item.photourl]]">
-                        <iron-image height="260" src="[[item.photourl]]" alt="[[item.name]]" fade="" preload=""></iron-image>
+                        <iron-image sizing="contain" src="[[item.photourl]]" alt="[[item.name]]" fade="" preload=""></iron-image>
                     </template>
-                    <div class="food-rating">
-                        <template is="dom-if" if="[[item.rating]]">    
-                            RATING: [[item.rating]]/5
-                        </template>
-                    </div>
-                    <div class="food-price">
-                        <template is="dom-if" if="[[item.price_level]]">    
-                            PRICE LEVEL: [[item.price_level]]
-                        </template>
-                    </div>
+
+                    <template is="dom-if" if="[[item.rating]]">    
+                        RATING: [[item.rating]]/5
+                    </template>
+                    
+                    <template is="dom-if" if="[[item.price_level]]">    
+                        PRICE LEVEL: [[item.price_level]]
+                    </template>
                     
                     <template is="dom-if" if="[[item.hasopening_hours]]">
                         <template is="dom-if" if="[[item.open_now]]">    
-                        <div class="open">OPEN NOW</div>
+                            <p class="open">OPEN NOW</p>
                         </template>
                         <template is="dom-if" if="[[!item.open_now]]">    
-                            <div class="close">CLOSED</div>
+                            <p class="close">CLOSED</p>
                         </template>    
                     </template>
                       
@@ -24692,11 +24697,6 @@ event and do your own custom submission:
                 value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
                 notify: false  
             },
-            baseUrl:{
-                type: String,
-                value: '',
-                notify: true  
-            },
             ajaxResult:{
                 type: Array,
                 notify: true,
@@ -24708,6 +24708,16 @@ event and do your own custom submission:
 </dom-module>
 <dom-module id="food-search" assetpath="myFood/">
   <style>
+      ::host{
+          display: block;
+          width:100%; 
+      }
+      #foodform{
+          position: relative;
+          width: 90%;
+          left: 5%;
+          margin-bottom: 20px;    
+      }      
       paper-input{
           --paper-input-container-color: black;
       }
@@ -24727,7 +24737,6 @@ event and do your own custom submission:
       }
   </style>   
   <template>
-   
     <form is="iron-form" method="get" action="/" id="foodform">
         <paper-input on-blur="getGeo" label="ADDRESS" aria-label="address" id="addressinput" type="text" value="{{addressvalue}}" autofocus="" required=""></paper-input>
         <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>
@@ -24744,10 +24753,10 @@ event and do your own custom submission:
         </label>
         
         <label for="opennow">
-            <paper-checkbox name="opennow" aria-label="open now" value="true">OPEN NOW ONLY</paper-checkbox>     
+            <paper-checkbox name="opennow" aria-label="open now" value="true">OPEN NOW ONLY</paper-checkbox>
         </label>
         <br><br>
-        <paper-button raised="" aria-label="submit form" onclick="_submit(event)">Submit</paper-button>    
+        <paper-button raised="" aria-label="submit form" onclick="_submit(event)">Submit</paper-button>  
     </form>                            
 
   </template>
@@ -24760,8 +24769,8 @@ event and do your own custom submission:
         }
         
       Polymer({
-        is: 'food-search',
-
+        is: 'food-search', 
+          
         properties: {
           showForm:{
                 type: Boolean,
@@ -24785,11 +24794,10 @@ event and do your own custom submission:
           locationObj:{
             type: Object,  
           },    
-        ajaxResult:{
+          ajaxResult:{
             type: Array,
-            //value: '',//function() { return []; },
             notify: true,
-        },      
+          },      
             addressvalue: {
             type: String,
             notify: true
@@ -24802,25 +24810,27 @@ event and do your own custom submission:
           noResult:{
             type: Boolean, 
             notify: true
-          }     
+          }    
         },
           
         listeners: {
             'foodform.iron-form-response': 'formResponse',
-            'foodform.iron-form-presubmit': 'formPreSubmit',
-            'foodform.iron-form-submit': 'formSubmit'
+            'foodform.iron-form-presubmit': 'formPreSubmit'
         },
-          
+        
+                
         getGeo:function(){
+            if(!document.querySelector(".pac-container .pac-item")){
+                return;
+            }
             var firstoption=document.querySelector(".pac-container .pac-item").innerHTML.replace(/<[^>]*>/g, " ");
-            console.log(firstoption);
+            //console.log(firstoption);
             this.addressvalue = firstoption;
-            //addressvalue
+            
             this.geocoder = new google.maps.Geocoder();
             this.geocoder.geocode({address: firstoption}, function(results, status) {
               if (status == google.maps.GeocoderStatus.OK) {
-                console.log(results);
-                //this.addressvalue = results[0].formatted_address;
+                //console.log(results);
                 this.locationObj= results[0].geometry.location;   
               }
               else {
@@ -24828,15 +24838,10 @@ event and do your own custom submission:
               }
             }.bind(this));
         },   
-          
-        formPreSubmit: function(event) {
-            //event.target.request.params['radius'] = event.target.request.params['radius']*1000;
-            //event.target.request.params['type'] = 'food';
-            //event.target.request.params['location'] = this.locationinLatLng;
-            //event.target.request.params['key'] = this.apiKey;  
-        },
         
-        formSubmit: function(event) {
+        formPreSubmit: function(event) {
+            event.preventDefault();
+            
             var request = {
                 location: this.locationObj,
                 radius: event.target.request.params['radius']*1000,
@@ -24907,7 +24912,8 @@ event and do your own custom submission:
             return;
           }
           this.addressvalue = this.place.formatted_address;
-          this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();   this.locationObj= this.place.geometry.location;     
+          //this.locationinLatLng= this.place.geometry.location.lat()+','+this.place.geometry.location.lng();
+          this.locationObj= this.place.geometry.location;     
         },
 
           
@@ -25746,7 +25752,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 </dom-module>
 <dom-module id="food-review" assetpath="myFood/">
   <style>
-      .backWrapper{
+      nav{
           background-color: #a36b00;
           position: fixed;
           top: 5px;
@@ -25759,6 +25765,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       .bannerWrapper{
           position: relative;
           margin-top: 50px;
+          display: block;
       }
       .banner{
           background-color: teal;
@@ -25789,15 +25796,13 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           right: 0;
           top:10px;
       }
-      .reviewWrapper{
+      .review{
+          width: 98%;
+          padding: 1%;
           background-color: #22E3BF;
-          width: 100%;
           border-bottom-color: aliceblue;
           border-bottom-style: solid;
           border-bottom-width: 1px;
-      }
-      .review{
-          padding: 10px;
       }
       .authorname{
           font-size: 24px;
@@ -25818,36 +25823,42 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         --paper-slider-pin-color: var(--paper-teal-500);
         --paper-slider-knob-start-border-color: var(--paper-teal-500);  
       }
+      paper-dialog {
+        width: 440px;
+        
+      }
   </style>   
   <template>
-    
-    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>      
-    <div class="backWrapper">
-      <a href="http://illl48.github.io/restaurant_reviewer/">
+    <google-maps-api api-key="[[apiKey]]" id="maps" libraries="places" on-api-load="on_api_load"></google-maps-api>  
+        
+    <nav>
+      <a data-route="restaurants" href$="/">
           <paper-icon-button icon="reply"></paper-icon-button>
       </a>
-    </div>  
-    <div class="bannerWrapper">
-        <div class="banner">
-            <div class="imageWrapper">
+    </nav>
+      
+    <section class="bannerWrapper">
+        <header class="banner">
+            <figure class="imageWrapper">
                 <template is="dom-if" if="[[ajaxResult.photourl]]">
                     <iron-image src="[[ajaxResult.photourl]]" width="200" height="200" sizing="cover" alt="[[ajaxResponse.name]]" preload="" fade=""></iron-image>   
                 </template>   
-            </div>
-            <div class="textWrapper">
+            </figure>
+            
+            <article class="textWrapper">
                 <br><br>
                 <h2>[[ajaxResult.name]]</h2>
-                <div>
+                <p>
                     <paper-icon-button icon="home" disabled=""></paper-icon-button>[[ajaxResult.formatted_address]]
-                </div>
-                <div>
+                </p>
+                <p>
                     <paper-icon-button icon="perm-phone-msg" disabled=""></paper-icon-button>
                     [[ajaxResult.formatted_phone_number]]
-                </div>     
-            </div>
+                </p>     
+            </article>
            
             <section onclick="clickHandler(event)">
-               <div data-dialog="dialog" id="addWrapper" aria-label="open add review form">
+               <div data-dialog="dialog" id="addWrapper" aria-label="add review">
                    <paper-icon-button icon="add-circle"></paper-icon-button>
                     <span>ADD REVIEW</span>
                </div>
@@ -25855,50 +25866,43 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
                 <paper-dialog id="dialog" modal="">
                     <h2>Add review</h2>
-                    <paper-dialog-scrollable>
+                      <paper-dialog-scrollable>
                         <form is="iron-form" method="get" action="/" id="reviewform">
                             <paper-input label="NAME" name="name" aria-label="name" autofocus="" required=""></paper-input>
                             <label for="rating">
                                 <div class="sliderTitle">RATING</div>
                                 <paper-slider class="teal" name="rating" id="rating" editable="true" pin="" snaps="" min="1" max="5" max-markers="5" step="1" value="1" aria-label="rating"></paper-slider>    
                             </label>
-                            <paper-textarea label="REVIEW" name="review" value="{{textvalue::input}}" placeholder="your review" aria-label="review" required=""></paper-textarea>    
+                            
+                            <paper-textarea max-rows="2" label="REVIEW" name="review" value="{{textvalue::input}}" placeholder="your review" aria-label="review" required=""></paper-textarea>   
                         </form>   
-                    </paper-dialog-scrollable>
+                      </paper-dialog-scrollable> 
                     <div class="buttons">
-                        <paper-button on-click="closeForm" aria-label="close review form">Cancel</paper-button>
-                        <paper-button on-click="submitForm" aria-label="submit review form">OK</paper-button>
+                        <paper-button on-click="closeForm" aria-label="close">Cancel</paper-button>
+                        <paper-button on-click="submitForm" aria-label="submit">OK</paper-button>
                     </div>
                 </paper-dialog> 
             </section>
               
-        </div>   
-    </div>
+        </header>   
+    </section>
     
     <template is="dom-repeat" items="{{fakeReview}}">
-      <div class="reviewWrapper">
-          <div class="review">   
-            <div class="authorname">[[item.author_name]]</div>
-            <div>[[item.time]]</div>
-            <br>
-            <div>RATING: [[item.rating]]/5</div>
-            <br>
-            <div>[[item.text]]</div><br>
-          </div>
-      </div>
+          <article class="review">   
+            <p class="authorname">[[item.author_name]]</p>
+            <p>[[item.time]]</p>
+            <p>RATING: [[item.rating]]/5</p>
+            <p>[[item.text]]</p>
+          </article>
     </template>
      
      <template is="dom-repeat" items="[[ajaxResult.reviews]]">
-      <div class="reviewWrapper">
-          <div class="review">   
-            <div class="authorname">[[item.author_name]]</div>
-            <div><epoch-time time-string="[[item.time]]"></epoch-time></div>
-            <br>
-            <div>RATING: [[item.rating]]/5</div>
-            <br>
-            <div>[[item.text]]</div><br>
-          </div>
-      </div>
+          <article class="review">   
+            <p class="authorname">[[item.author_name]]</p>
+            <p><epoch-time time-string="[[item.time]]"></epoch-time></p>
+            <p>RATING: [[item.rating]]/5</p>
+            <p>[[item.text]]</p>
+          </article>
     </template>
     
   </template>
@@ -25987,11 +25991,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         },
           
         _placeidChanged: function(newValue, oldValue){
-            console.log("new:"+newValue);
-            console.log("old:"+oldValue);
+            //console.log("new:"+newValue);
+            //console.log("old:"+oldValue);
             if (newValue=== ""&& typeof oldValue=== "undefined")  return  ;
-            
-            
+                        
             var request = {
                 placeId: newValue
             };
@@ -26013,18 +26016,18 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
                 }
             } 
             
-            function qq(){
+            function getDetails(){
                 this.service = new google.maps.places.PlacesService(document.createElement('div'));
                 this.service.getDetails(request, callback.bind(this));      
             }
-            setTimeout(qq.bind(this), 250);
+            setTimeout(getDetails.bind(this), 250);
         },   
       });
   </script>
 </dom-module>
 <dom-module id="search-list" assetpath="myFood/">
   <style>
-      .searchiconWrapper{
+      .searchicon{
           background-color: #a36b00;
           position: fixed;
           top: 5px;
@@ -26048,17 +26051,16 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           border-top-style: solid;
       }
       
-      #form{
-          position: relative;
-          width: 90%;
-          left: 5%;
-          margin-bottom: 20px;
-      }
-      
       #listWrapper{
           z-index: 1;
           position: relative;
           top:20px;
+      }
+      @media all and (max-width: 600px) {
+          #listWrapper{
+              top:50px;
+              right:-5%;
+          }    
       }
       
       #zero_result{
@@ -26069,48 +26071,33 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
   </style>   
   <template>
-    <template is="dom-if" if="{{!showForm}}">    
-        <div class="searchiconWrapper" on-click="show">
-            <paper-icon-button aria-label="open search restaurant form" icon="search"></paper-icon-button>
-        </div>
+    <template is="dom-if" if="{{!showForm}}">   
+            <paper-icon-button class="searchicon" on-click="show" aria-label="open search restaurant form" icon="search"></paper-icon-button>
     </template>
     <template is="dom-if" if="{{showForm}}">    
-        <div class="searchiconWrapper" on-click="show">
-            <paper-icon-button aria-label="close search restaurant form" icon="close"></paper-icon-button>
-        </div>
+            <paper-icon-button class="searchicon" on-click="show" aria-label="close search restaurant form" icon="close"></paper-icon-button>
     </template> 
       
     <template is="dom-if" if="{{showForm}}">    
-        <div id="formWrapper">
-            <div id="form">
-                <food-search show-form="{{showForm}}" no-result="{{noResult}}" ajax-result="{{ajaxResult}}"></food-search>
-            </div>
-        </div>
+        <section id="formWrapper">
+            <food-search show-form="{{showForm}}" no-result="{{noResult}}" ajax-result="{{ajaxResult}}"></food-search>
+        </section>
     </template>
     
-    <div id="listWrapper">
-        <food-list base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
-    </div>
+    <food-list id="listWrapper" ajax-result="{{ajaxResult}}"></food-list>
     
-      <template is="dom-if" if="{{noResult}}">
+    <template is="dom-if" if="{{noResult}}">
        <paper-material elevation="1" id="zero_result">
            0 results    
        </paper-material>
     </template>            
-  </template>          
-
-
+  </template>
 
   <script>  
       Polymer({
         is: 'search-list',
 
         properties: {
-            baseUrl:{
-                type: String,
-                value: '',
-                notify: true  
-            },
             ajaxResult:{
                 type: Array,
                 value: function() { return []; },
