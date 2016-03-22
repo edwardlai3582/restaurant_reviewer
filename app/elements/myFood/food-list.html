@@ -84,7 +84,7 @@
                     <p class="vicinity">[[item.vicinity]]</p>
                 </div>
                 <div class="card-actions">
-                    <paper-button class="reviewlink" style="float:right;"><a href$="{{baseUrl}}restaurants/[[item.place_id]]">Reviews</a></paper-button>
+                    <paper-button class="reviewlink" style="float:right;"><a href$="restaurants/[[item.place_id]]">Reviews</a></paper-button>
                 </div>
             </paper-card>
         </template>
@@ -99,11 +99,6 @@
                 type: String,
                 value: 'AIzaSyAMOszNOH-Bf1QX68qGtSD_9QGmJDLlP1g',
                 notify: false  
-            },
-            baseUrl:{
-                type: String,
-                value: '',
-                notify: true  
             },
             ajaxResult:{
                 type: Array,

@@ -63,7 +63,7 @@
         </section>
     </template>
     
-    <food-list id="listWrapper" base-url="{{baseUrl}}" ajax-result="{{ajaxResult}}"></food-list>
+    <food-list id="listWrapper" ajax-result="{{ajaxResult}}"></food-list>
     
     <template is="dom-if" if="{{noResult}}">
        <paper-material elevation="1" id="zero_result">
@@ -77,11 +77,6 @@
         is: 'search-list',
 
         properties: {
-            baseUrl:{
-                type: String,
-                value: '',
-                notify: true  
-            },
             ajaxResult:{
                 type: Array,
                 value: function() { return []; },

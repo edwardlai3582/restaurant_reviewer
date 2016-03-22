@@ -31,11 +31,11 @@
         <div class="content" role="main" aria-label="sections wrapper">
             <iron-pages attr-for-selected="data-route" selected="{{route}}">
                 <section data-route="restaurants">
-                    <search-list base-url="{{baseUrl}}"></search-list>       
+                    <search-list></search-list>       
                 </section>
 
                 <section data-route="restaurant-info">
-                    <food-review placeid="{{params.placeid}}" base-url="{{baseUrl}}"></food-review>
+                    <food-review placeid="{{params.placeid}}"></food-review>
                 </section>
             </iron-pages>
         </div>
