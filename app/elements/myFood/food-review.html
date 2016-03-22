@@ -217,9 +217,11 @@
         }, 
         
         listeners: {
-            'reviewform.iron-form-submit': 'formSubmit'
+            'reviewform.iron-form-presubmit': 'formPreSubmit'
         },
-        formSubmit: function(event) {
+        formPreSubmit: function(event) {
+            event.preventDefault();
+            
             var reviewObj={};
             reviewObj.author_name= event.target.request.params['name'];
             reviewObj.time= this.getNowDate();
