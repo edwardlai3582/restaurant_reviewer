@@ -16800,7 +16800,8 @@ module.exports = Array.isArray || function (arr) {
     //if (window.location.port === '') {  // if production
     //  page.base(app.baseUrl.replace(/\/$/, ''));
     //}
-page.base('/restaurant_reviewer');
+//page.base('/restaurant_reviewer');
+      page.base(window.location.pathname.replace(/\/$/, ''));
     // Middleware
     /*      
     function scrollToTop(ctx, next) {
@@ -16830,7 +16831,7 @@ page.base('/restaurant_reviewer');
     page('*', function() {
       //app.$.toast.text = 'Can\'t find: ' + window.location.href  + '. Redirected you to Home Page';
       //app.$.toast.show();
-      page.redirect('/restaurant_reviewer/');//app.baseUrl
+      page.redirect('/');//app.baseUrl
     });
 
     // add #! before urls
